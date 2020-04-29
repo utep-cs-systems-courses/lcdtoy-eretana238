@@ -30,9 +30,10 @@ main()
   configureClocks();
   lcd_init();
 
-  clearScreen(COLOR_BLUE);
+  clearScreen(COLOR_BLACK);
   drawString5x7(20,20, "hello", COLOR_GREEN, COLOR_RED);
 
-  layerDraw(&layer0);
+  layerDraw(&layer1);
+  //layerDraw
 
 }
