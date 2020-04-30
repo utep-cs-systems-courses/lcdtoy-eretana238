@@ -18,3 +18,5 @@ load: play.elf
 
 clean:
 	rm -f *.o *.elf
+
+buzzer.o: buzzer.h buzzer.c
