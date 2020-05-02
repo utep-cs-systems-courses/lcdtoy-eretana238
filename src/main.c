@@ -9,6 +9,24 @@
 
 #define GREEN_LED BIT6
 u_char gameOver = 0;
+u_char xLoc = screenWidth/2;
+u_char score = 0x30;
+
+void drawSpaceship(u_char x) {
+  for (u_char r = 0; r < 10; r++) {
+    for (u_char c = 0; c < r; c++) {
+      drawPixel(x+c,screenHeight-30+r,COLOR_GREEN);
+      drawPixel(x-c,screenHeight-30+r,COLOR_GREEN);
+    }
+  }
+
+  for (u_char c = 0; c < 11; c++) {
+    for (u_char r = 0; r <= c; r++) {
+      drawPixel(x+c,screenHeight-30+r,COLOR_BLACK);
+      drawPixel(x-c,screenHeight-30+r,COLOR_BLACK);
+    }
+  }
+}
 
 AbRect rect10 = {abRectGetBounds, abRectCheck, {10,10}}; /**< 10x10 rectangle */
 AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
@@ -157,15 +175,23 @@ void main()
     P1OUT |= GREEN_LED;       /**< Green led on when CPU on */
     redrawScreen = 0;
     movLayerDraw(&ml0, &layer0);
+    drawSpaceship(xLoc);
+    drawString5x7(screenWidth/2-30,8, "Score:", COLOR_GREEN, COLOR_BLACK);
+    drawString5x7(screenWidth/2+10,8,"0", COLOR_GREEN, COLOR_BLACK);
+    
+    
     
     // sense switches here!!
     // move custom object to the left or to the right
     u_int switches = p2sw_read(), i;
-    char str[5];
+    
     for (i = 0; i < 4; i++)
-      str[i] = (switches & (1<<i)) ? '-' : '0'+i;
-    str[4] = 0;
-    drawString5x7(60,10, str, COLOR_GREEN, COLOR_BLUE);
+      if(!(switches & (1<<i))) {
+	if (i == 0 && xLoc > 22) xLoc-=2;
+	//else if (i == 1)
+	//else if (i == 2)
+	else if (i == 3 && xLoc < screenWidth-22) xLoc+=2;
+      }
   }
 }
 
@@ -176,7 +202,7 @@ void wdt_c_handler()
   P1OUT |= GREEN_LED;		      /**< Green LED on when cpu on */
   count ++;
     
-  if (count == 10) {
+  if (count == 5) {
     mlAdvance(&ml0, &fieldFence);
     redrawScreen = 1;
     count = 0;
