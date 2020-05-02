@@ -6,6 +6,7 @@
 #include <shape.h>
 #include <abCircle.h>
 #include "buzzer.h"
+#include "soundEngine.h"
 
 #define GREEN_LED BIT6
 u_char gameOver = 0;
@@ -178,8 +179,7 @@ void main()
     drawSpaceship(xLoc);
     drawString5x7(screenWidth/2-30,8, "Score:", COLOR_GREEN, COLOR_BLACK);
     drawString5x7(screenWidth/2+10,8,"0", COLOR_GREEN, COLOR_BLACK);
-    
-    
+        
     
     // sense switches here!!
     // move custom object to the left or to the right
@@ -188,7 +188,9 @@ void main()
     for (i = 0; i < 4; i++)
       if(!(switches & (1<<i))) {
 	if (i == 0 && xLoc > 22) xLoc-=2;
-	//else if (i == 1)
+	else if (i == 1) {
+	  
+	}
 	//else if (i == 2)
 	else if (i == 3 && xLoc < screenWidth-22) xLoc+=2;
       }
@@ -199,13 +201,19 @@ void main()
 void wdt_c_handler()
 {
   static short count = 0;
+  static char songCount = 0;
   P1OUT |= GREEN_LED;		      /**< Green LED on when cpu on */
   count ++;
+  songCount++;
     
   if (count == 5) {
     mlAdvance(&ml0, &fieldFence);
     redrawScreen = 1;
     count = 0;
+  }
+  if (songCount == 10) {
+    play_song();
+    songCount = 0;
   }
   P1OUT &= ~GREEN_LED;		    /**< Green LED off when cpu off */
  
