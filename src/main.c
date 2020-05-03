@@ -7,30 +7,18 @@
 #include <abCircle.h>
 #include "buzzer.h"
 #include "soundEngine.h"
+#include "spaceship.c"
 
 #define GREEN_LED BIT6
 u_char gameOver = 0;
-u_char xLoc = screenWidth/2;
-u_char score = 0x30;
+u_char xLoc = screenWidth/2; /* for the ship since it only moves horizontally */
+u_char xLazer = 0;
+u_char yLoc = screenHeight-35; /* for the lazer since it only moves vertically */
+u_char shooting = 0;
 
-void drawSpaceship(u_char x) {
-  for (u_char r = 0; r < 10; r++) {
-    for (u_char c = 0; c < r; c++) {
-      drawPixel(x+c,screenHeight-30+r,COLOR_GREEN);
-      drawPixel(x-c,screenHeight-30+r,COLOR_GREEN);
-    }
-  }
 
-  for (u_char c = 0; c < 11; c++) {
-    for (u_char r = 0; r <= c; r++) {
-      drawPixel(x+c,screenHeight-30+r,COLOR_BLACK);
-      drawPixel(x-c,screenHeight-30+r,COLOR_BLACK);
-    }
-  }
-}
-
-AbRect rect10 = {abRectGetBounds, abRectCheck, {10,10}}; /**< 10x10 rectangle */
-AbRArrow rightArrow = {abRArrowGetBounds, abRArrowCheck, 30};
+void drawSpaceship(u_char x);
+void drawLazer(u_char x, u_char y);
 
 AbRectOutline fieldOutline = {	/* playing field */
   abRectOutlineGetBounds, abRectOutlineCheck,   
@@ -45,15 +33,13 @@ Layer fieldLayer = {		/* playing field as a layer */
   0
 };
 
-Layer layer0 = {		/**< Layer with a red square */
+Layer layer0 = {		/**< Layer with a red circle */
   (AbShape *) &circle5,
   {screenWidth/2, 30}, /**< center */
   {0,0}, {20,20},				    /* last & next pos */
-  COLOR_RED,
+  COLOR_WHITE,
   &fieldLayer,
 };
-
-
 
 /** Moving Layer
  *  Linked list of layer references
@@ -162,7 +148,9 @@ void main()
 
 
   layerGetBounds(&fieldLayer, &fieldFence);
-
+  drawString5x7(screenWidth/2-30,8, "Score:", COLOR_GREEN, COLOR_BLACK);
+  drawString5x7(screenWidth/2+10,8,"0", COLOR_GREEN, COLOR_BLACK);
+    
 
   enableWDTInterrupts();      /**< enable periodic interrupt */
   or_sr(0x8);	              /**< GIE (enable interrupts) */
@@ -177,22 +165,28 @@ void main()
     redrawScreen = 0;
     movLayerDraw(&ml0, &layer0);
     drawSpaceship(xLoc);
-    drawString5x7(screenWidth/2-30,8, "Score:", COLOR_GREEN, COLOR_BLACK);
-    drawString5x7(screenWidth/2+10,8,"0", COLOR_GREEN, COLOR_BLACK);
+    if (shooting) {
+      if (yLoc < 20) {
+	yLoc = screenHeight-35;
+	clearLazer(xLazer, yLoc);
+	shooting = 0;
+      }
+      yLoc -= 3;
+      drawLazer(xLazer, yLoc);
+    }
         
-    
-    // sense switches here!!
-    // move custom object to the left or to the right
     u_int switches = p2sw_read(), i;
     
     for (i = 0; i < 4; i++)
       if(!(switches & (1<<i))) {
-	if (i == 0 && xLoc > 22) xLoc-=2;
-	else if (i == 1) {
-	  
+	if (i == 0 && xLoc > 22)
+	  xLoc-=2;
+	else if ((i == 0 || i == 1) && !shooting) {
+	  xLazer = xLoc;
+	  shooting = 1;
 	}
-	//else if (i == 2)
-	else if (i == 3 && xLoc < screenWidth-22) xLoc+=2;
+	else if (i == 3 && xLoc < screenWidth-22)
+	  xLoc+=2;
       }
   }
 }
@@ -206,7 +200,7 @@ void wdt_c_handler()
   count ++;
   songCount++;
     
-  if (count == 5) {
+  if (count == 10) {
     mlAdvance(&ml0, &fieldFence);
     redrawScreen = 1;
     count = 0;
@@ -215,6 +209,5 @@ void wdt_c_handler()
     play_song();
     songCount = 0;
   }
-  P1OUT &= ~GREEN_LED;		    /**< Green LED off when cpu off */
- 
+  P1OUT &= ~GREEN_LED;		    /**< Green LED off when cpu off */ 
 }
