@@ -2,7 +2,12 @@
 #include <libTimer.h>
 #include <lcdutils.h>
 #include <lcddraw.h>
+#include "spaceship.h"
 
+u_char xLoc = screenWidth/2; /* for the ship since it only moves horizontally */
+u_char xLazer = 0;           /* for the lazer shooting, it stays in the last xLoc pos */
+u_char yLoc = screenHeight-35; /* for the lazer since it only moves vertically */
+u_char shooting = 0;
 
 void drawSpaceship(u_char x) {
   for (u_char r = 0; r < 10; r++) {

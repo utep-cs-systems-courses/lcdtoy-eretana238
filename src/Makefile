@@ -10,7 +10,7 @@ AS              = msp430-elf-gcc -mmcu=${CPU} -c
 all: play.elf
 
 #additional rules for files
-play.elf: ${COMMON_OBJECTS} main.o wdt_handler.o buzzer.o soundEngine.o 
+play.elf: ${COMMON_OBJECTS} main.o wdt_handler.o buzzer.o soundEngine.o spaceship.o switches.o
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ -lTimer -lLcd -lShape -lCircle -lp2sw
 
 load: play.elf
@@ -22,3 +22,7 @@ clean:
 buzzer.o: buzzer.h buzzer.c
 
 soundEngine.o: buzzer.h soundEngine.h soundEngine.c
+
+switches.o: spaceship.h switches.h switches.c
+
+spaceship.o: spaceship.h spaceship.c
