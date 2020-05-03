@@ -33,5 +33,9 @@ void drawLazer(u_char x, u_char y) {
   }
 }
 void clearLazer(u_char x, u_char y) {
-  
+  for (u_char c = 0; c < 2; c++) {
+    for (u_char r = 0; r < 4; r++) {
+      drawPixel(x+c, y+r, COLOR_BLACK);
+    }
+  }
 }
